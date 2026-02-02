@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>To-Do List App</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #f2f2f2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.todo-container {
+    background: white;
+    padding: 20px;
+    width: 350px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h2 {
+    text-align: center;
+    color: #333;
+}
+
+.input-area {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+input {
+    flex: 1;
+    padding: 8px;
+    font-size: 16px;
+}
+
+button {
+    padding: 8px 12px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #45a049;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    background: #eee;
+    padding: 8px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 4px;
+}
+
+li.completed {
+    text-decoration: line-through;
+    color: gray;
+    background: #d9ffd9;
+}
+
+.delete-btn {
+    background: red;
+    border: none;
+    color: white;
+    padding: 4px 8px;
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="todo-container">
+    <h2>To-Do List</h2>
+
+    <div class="input-area">
+        <input type="text" id="taskInput" placeholder="Enter new task">
+        <button onclick="addTask()">Add</button>
+    </div>
+
+    <ul id="taskList"></ul>
+</div>
+
+<script>
+let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+
+function saveTasks() {
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+
+function renderTasks() {
+    const list = document.getElementById("taskList");
+    list.innerHTML = "";
+
+    tasks.forEach((task, index) => {
+        const li = document.createElement("li");
+        li.textContent = task.text;
+
+        if (task.completed) {
+            li.classList.add("completed");
+        }
+
+        li.onclick = function () {
+            tasks[index].completed = !tasks[index].completed;
+            saveTasks();
+            renderTasks();
+        };
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "Delete";
+        deleteBtn.className = "delete-btn";
+
+        deleteBtn.onclick = function (e) {
+            e.stopPropagation(); // prevent strike toggle
+            tasks.splice(index, 1);
+            saveTasks();
+            renderTasks();
+        };
+
+        li.appendChild(deleteBtn);
+        list.appendChild(li);
+    });
+}
+
+function addTask() {
+    const input = document.getElementById("taskInput");
+    const taskText = input.value.trim();
+
+    if (taskText === "") {
+        alert("Please enter a task!");
+        return;
+    }
+
+    tasks.push({ text: taskText, completed: false });
+    saveTasks();
+    renderTasks();
+    input.value = "";
+}
+
+renderTasks();
+</script>
+
+</body>
+</html>
