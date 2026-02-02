@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Northview College Events</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+/* HEADER */
+header {
+    background: #003366;
+    color: white;
+    padding: 15px;
+}
+
+.top-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo {
+    width: 50px;
+    height: 50px;
+    background: white;
+    color: #003366;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    border-radius: 50%;
+}
+
+nav a {
+    color: white;
+    margin: 0 10px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.search-bar {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.search-bar input, .search-bar select {
+    padding: 8px;
+    width: 100%;
+}
+
+/* EVENTS */
+main {
+    padding: 20px;
+}
+
+.filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.event-card {
+    background: #f2f2f2;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+}
+
+.event-card h3 {
+    color: #003366;
+}
+
+.event-card button {
+    margin-top: 10px;
+    padding: 6px 12px;
+    background: #003366;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+/* PAGINATION */
+.pagination {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.pagination button {
+    padding: 6px 12px;
+    margin: 5px;
+}
+
+/* FOOTER */
+footer {
+    background: #003366;
+    color: white;
+    text-align: center;
+    padding: 15px;
+    margin-top: 20px;
+}
+
+.social a {
+    color: white;
+    margin: 0 10px;
+    text-decoration: none;
+    font-size: 18px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+    .filters, .search-bar {
+        flex-direction: column;
+    }
+}
+</style>
+</head>
+<body>
+
+<header>
+    <div class="top-header">
+        <div class="logo-area">
+            <div class="logo">NC</div>
+            <h2>Northview College</h2>
+        </div>
+        <nav>
+            <a href="#">Home</a>
+            <a href="#">Events</a>
+            <a href="#">Admissions</a>
+            <a href="#">Contact</a>
+        </nav>
+    </div>
+
+    <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Search by title or date (YYYY-MM-DD)">
+    </div>
+</header>
+
+<main>
+    <div class="filters">
+        <select id="categoryFilter">
+            <option value="All">All Categories</option>
+            <option value="Sports">Sports</option>
+            <option value="Workshop">Workshop</option>
+            <option value="Guest Lecture">Guest Lecture</option>
+        </select>
+
+        <select id="dateFilter">
+            <option value="all">All Dates</option>
+            <option value="today">Today</option>
+            <option value="week">This Week</option>
+        </select>
+    </div>
+
+    <div id="eventList"></div>
+
+    <div class="pagination">
+        <button onclick="prevPage()">Previous</button>
+        <span id="pageInfo"></span>
+        <button onclick="nextPage()">Next</button>
+    </div>
+</main>
+
+<footer>
+    <div class="social">
+        <a href="#">LinkedIn</a>
+        <a href="#">Facebook</a>
+        <a href="#">Twitter</a>
+    </div>
+    <p>Contact: +91 98765 43210 | northview@college.edu</p>
+</footer>
+
+<script>
+const events = [
+    { title: "Football Championship", date: "2026-02-03", category: "Sports", description: "Inter-college football match", location: "Main Ground" },
+    { title: "AI Workshop", date: "2026-02-05", category: "Workshop", description: "Learn AI basics", location: "Lab 2" },
+    { title: "Guest Lecture on Space", date: "2026-02-06", category: "Guest Lecture", description: "Talk by ISRO scientist", location: "Auditorium" },
+    { title: "Basketball Match", date: "2026-02-07", category: "Sports", description: "Friendly match", location: "Court" },
+    { title: "Web Dev Workshop", date: "2026-02-08", category: "Workshop", description: "HTML CSS JS", location: "Lab 1" },
+    { title: "Career Guidance", date: "2026-02-09", category: "Guest Lecture", description: "Career talk", location: "Hall 3" },
+    { title: "Cricket Match", date: "2026-02-10", category: "Sports", description: "Finals", location: "Ground" }
+];
+
+let currentPage = 1;
+const eventsPerPage = 5;
+
+const eventList = document.getElementById("eventList");
+const searchInput = document.getElementById("searchInput");
+const categoryFilter = document.getElementById("categoryFilter");
+const dateFilter = document.getElementById("dateFilter");
+
+searchInput.addEventListener("input", renderEvents);
+categoryFilter.addEventListener("change", renderEvents);
+dateFilter.addEventListener("change", renderEvents);
+
+function filterEvents() {
+    let filtered = [...events];
+    const search = searchInput.value.toLowerCase();
+    const category = categoryFilter.value;
+    const dateOption = dateFilter.value;
+    const today = new Date();
+
+    filtered = filtered.filter(e =>
+        e.title.toLowerCase().includes(search) ||
+        e.date.includes(search)
+    );
+
+    if (category !== "All") {
+        filtered = filtered.filter(e => e.category === category);
+    }
+
+    if (dateOption === "today") {
+        filtered = filtered.filter(e => new Date(e.date).toDateString() === today.toDateString());
+    }
+
+    if (dateOption === "week") {
+        const weekLater = new Date();
+        weekLater.setDate(today.getDate() + 7);
+        filtered = filtered.filter(e => new Date(e.date) >= today && new Date(e.date) <= weekLater);
+    }
+
+    return filtered;
+}
+
+function renderEvents() {
+    const filteredEvents = filterEvents();
+    const start = (currentPage - 1) * eventsPerPage;
+    const paginated = filteredEvents.slice(start, start + eventsPerPage);
+
+    eventList.innerHTML = "";
+
+    paginated.forEach(event => {
+        const div = document.createElement("div");
+        div.className = "event-card";
+        div.innerHTML = `
+            <h3>${event.title}</h3>
+            <p><strong>Date:</strong> ${event.date}</p>
+            <p><strong>Category:</strong> ${event.category}</p>
+            <p>${event.description}</p>
+            <button onclick="alert('Location: ${event.location}')">View Details</button>
+        `;
+        eventList.appendChild(div);
+    });
+
+    document.getElementById("pageInfo").textContent =
+        `Page ${currentPage} of ${Math.ceil(filteredEvents.length / eventsPerPage)}`;
+}
+
+function nextPage() {
+    currentPage++;
+    renderEvents();
+}
+
+function prevPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        renderEvents();
+    }
+}
+
+renderEvents();
+</script>
+
+</body>
+</html>
